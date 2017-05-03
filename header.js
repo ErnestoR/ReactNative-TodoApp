@@ -24,7 +24,9 @@ class App extends Component {
     return (
       <View style={styles.header}>
         <TouchableOpacity onPress={this.props.onToggleAllComplete}>
-          <Text style={styles.toggle}>{String.fromCharCode(10003)}</Text>
+          <Text style={styles.toggle}>
+            {String.fromCharCode(10003)}
+          </Text>
         </TouchableOpacity>
         <TextInput
           value={this.props.value}

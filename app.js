@@ -1,12 +1,20 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  ListView,
+  Keyboard,
+} from 'react-native';
 import Header from './header';
 import Footer from './footer';
+import Row from './row';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#BADA55',
+    backgroundColor: '#F5F5F5',
     ...Platform.select({
       ios: {
         paddingTop: 30,
@@ -16,19 +24,43 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  lists: {
+    backgroundColor: '#FFFFFF',
+  },
+  separator: {
+    borderWidth: 1,
+    borderColor: '#F5F5F5',
+  },
 });
 
 class App extends Component {
   constructor(props) {
     super(props);
+
+    const ds = new ListView.DataSource({
+      rowHasChanged: (r1, r2) => {
+        return r1 !== r2;
+      },
+    });
+
     this.state = {
       allComplete: false,
       value: '',
       items: [],
+      dataSource: ds.cloneWithRows([])
     };
 
     this.handleAddItem = this.handleAddItem.bind(this);
     this.handleToggleAllComplete = this.handleToggleAllComplete.bind(this);
+    this.setSource = this.setSource.bind(this);
+  }
+
+  setSource(items, itemsDataSource, otherState = {}) {
+    this.setState({
+      items,
+      dataSource: this.state.dataSource.cloneWithRows(itemsDataSource),
+      ...otherState,
+    });
   }
 
   handleAddItem() {
@@ -43,10 +75,7 @@ class App extends Component {
       },
     ];
 
-    this.setState({
-      items: newItems,
-      value: '',
-    });
+    this.setSource(newItems, newItems, { value: '', });
   }
 
   handleToggleAllComplete() {
@@ -58,10 +87,7 @@ class App extends Component {
 
     console.table(newItems);
 
-    this.setState({
-      items: newItems,
-      allComplete: complete,
-    });
+    this.setSource(newItems, newItems, { allComplete: complete });
   }
 
   render() {
@@ -74,9 +100,25 @@ class App extends Component {
           onToggleAllComplete={this.handleToggleAllComplete}
         />
         <View style={styles.content}>
-          <Text> Hola </Text>
+          <ListView
+            style={styles.lists}
+            enableEmptyRows
+            dataSource={this.state.dataSource}
+            onScroll={() => Keyboard.dismiss()}
+            renderRow={({ key, ...value }) => {
+              return (
+                <Row
+                  key={key}
+                  {...value}
+                />
+              );
+            }}
+            renderSeparator={(sectionId, rowId) => {
+              return <View key={rowId} style={styles.separator}/>;
+            }}
+          />
         </View>
-        <Footer />
+        <Footer/>
       </View>
     );
   }
